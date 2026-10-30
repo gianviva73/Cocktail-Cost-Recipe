@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="it" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cocktail Cost & Recipe Lab - Professional Edition</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        pro: {
+                            bg: '#ffffff',
+                            card: '#ffffff',
+                            border: '#cbd5e1',
+                            text: '#0f172a',
+                            muted: '#475569',
+                            green: '#16a34a',
+                            red: '#dc2626',
+                            dark: '#0f172a'
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['Playfair Display', 'Georgia', 'serif'],
+                        sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome per le icone -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+        
+        body {
+            background-color: #ffffff;
+            color: #0f172a;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .pro-title {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .card-pro {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-radius: 1rem;
+        }
+
+        input, select, textarea {
+            background-color: #ffffff !important;
+            border: 1px solid #94a3b8 !important;
+            color: #0f172a !important;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #16a34a !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15) !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-green-600 selection:text-white">
+
+    <!-- Header Professionale Bianco -->
+    <header class="border-b border-slate-300 bg-white sticky top-0 z-50 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 py-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white font-extrabold text-xl shadow-md">
+                    <i class="fa-solid fa-martini-glass-citrus text-green-500"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-extrabold text-slate-900 tracking-wide leading-tight pro-title">Cocktail Cost & Recipe Lab</h1>
+                    <p class="text-xs text-green-700 font-bold">Community Cocktail Art</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <!-- Selettore Lingua -->
+                <select id="lang-picker" onchange="changeLanguage(this.value)" class="text-xs font-bold px-2.5 py-1.5 rounded-lg border border-slate-300 text-slate-900 bg-white cursor-pointer">
+                    <option value="it">🇮🇹 IT</option>
+                    <option value="en">🇬🇧 EN</option>
+                    <option value="es">🇪🇸 ES</option>
+                    <option value="fr">🇫🇷 FR</option>
+                </select>
+
+                <!-- Pulsante Conversione Rapida -->
+                <button onclick="toggleConverter()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 border border-slate-300 text-slate-900 text-xs font-bold hover:bg-slate-200 transition-all cursor-pointer">
+                    <i class="fa-solid fa-calculator text-green-600"></i>
+                    <span id="ui-btn-conv">Convertitore</span>
+                </button>
+
+                <!-- Pulsante Guida Utente -->
+                <button onclick="toggleGuide()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 border border-green-300 text-green-700 text-xs font-bold hover:bg-green-100 transition-all cursor-pointer">
+                    <i class="fa-solid fa-circle-question"></i>
+                    <span id="ui-btn-guide">Guida</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-5xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
+
+        <!-- GUIDA UTENTE MODALE / BOX -->
+        <section id="guide-box" class="hidden card-pro p-5 shadow-lg relative transition-all border-l-4 border-l-green-600">
+            <button onclick="toggleGuide()" class="absolute top-4 right-4 text-slate-500 hover:text-slate-900">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3 flex items-center gap-2 pro-title">
+                <i class="fa-solid fa-book-open text-green-600"></i> <span id="g-title">Guida Utente & Manuale Operativo</span>
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs text-slate-800">
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <span class="text-green-700 font-bold block mb-1" id="g-step1-t">1. Scegli o Crea</span>
+                    <p class="text-slate-700" id="g-step1-d">Seleziona uno dei 102 cocktail classici IBA dal menu o digita la tua ricetta originale.</p>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <span class="text-green-700 font-bold block mb-1" id="g-step2-t">2. Costi & Bottiglie</span>
+                    <p class="text-slate-700" id="g-step2-d">Imposta il costo e il formato (ml) della bottiglia per calcolare il costo esatto della singola dose.</p>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <span class="text-green-700 font-bold block mb-1" id="g-step3-t">3. Margine & Prezzo</span>
+                    <p class="text-slate-700" id="g-step3-d">Imposta il prezzo al pubblico per verificare istantaneamente l'incidenza Drink Cost % ed il margine.</p>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <span class="text-green-700 font-bold block mb-1" id="g-step4-t">4. Convertitore</span>
+                    <p class="text-slate-700" id="g-step4-d">Usa il convertitore rapido Oz/cl/ml integrato per ogni esigenza di dosaggio.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONVERTITORE RAPIDO MODALE/BOX -->
+        <section id="converter-box" class="hidden card-pro p-5 shadow-lg relative transition-all border-l-4 border-l-slate-900">
+            <button onclick="toggleConverter()" class="absolute top-4 right-4 text-slate-500 hover:text-slate-900">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3 flex items-center gap-2 pro-title">
+                <i class="fa-solid fa-scale-balanced text-green-600"></i> <span id="ui-conv-title">Convertitore Rapido Unità Mixology</span>
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                <div>
+                    <label class="block text-slate-900 mb-1 font-semibold" id="ui-lbl-oz">Once Liquide (oz)</label>
+                    <input type="number" id="conv-oz" step="0.25" placeholder="1.5" oninput="convertUnits('oz')" class="w-full px-3 py-2 rounded-xl text-sm font-bold">
+                </div>
+                <div>
+                    <label class="block text-slate-900 mb-1 font-semibold" id="ui-lbl-cl">Centilitri (cl)</label>
+                    <input type="number" id="conv-cl" step="0.5" placeholder="4.5" oninput="convertUnits('cl')" class="w-full px-3 py-2 rounded-xl text-sm font-bold">
+                </div>
+                <div>
+                    <label class="block text-slate-900 mb-1 font-semibold" id="ui-lbl-ml">Millilitri (ml)</label>
+                    <input type="number" id="conv-ml" step="5" placeholder="45" oninput="convertUnits('ml')" class="w-full px-3 py-2 rounded-xl text-sm font-bold">
+                </div>
+            </div>
+        </section>
+
+        <!-- HEADER SCHEDA DRINK -->
+        <section class="card-pro p-5 space-y-4">
+            <!-- SELETTORE RAPIDO 102 COCKTAIL -->
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-900">
+                    <i class="fa-solid fa-book-bookmark text-green-600 text-base"></i>
+                    <span id="ui-lbl-recipe-select">Scegli un Cocktail dal Ricettario (102 Classici IBA):</span>
+                </div>
+                <select id="recipe-selector" onchange="loadPredefinedRecipe(this.value)" class="w-full sm:w-72 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-900 bg-white border border-slate-300 cursor-pointer">
+                    <option value="" id="ui-opt-default">-- Seleziona o Cerca Cocktail --</option>
+                </select>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-xs text-slate-700 font-semibold uppercase tracking-wider mb-1" id="ui-lbl-cocktail-name">Nome del Cocktail / Ricetta</label>
+                    <input type="text" id="cocktail-name" value="Negroni Classico" class="w-full px-3 py-2 rounded-xl text-lg font-extrabold pro-title text-slate-900 bg-white border-slate-300">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-700 font-semibold uppercase tracking-wider mb-1" id="ui-lbl-cocktail-glass">Bicchiere / Serve</label>
+                    <input type="text" id="cocktail-glass" value="Tumbler Basso (Rock)" class="w-full px-3 py-2 rounded-xl text-sm font-semibold text-slate-900 bg-white border-slate-300">
+                </div>
+            </div>
+        </section>
+
+        <!-- DASHBOARD RISULTATI TOTALE & MARGINE -->
+        <section class="card-pro p-6 shadow-md relative overflow-hidden border-t-4 border-t-green-600">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-slate-200 pb-5 mb-5">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-700 block mb-1" id="ui-lbl-total-cost">Costo Totale Drink (Food/Drink Cost)</span>
+                    <div class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight pro-title" id="total-drink-cost">€ 0.00</div>
+                </div>
+                <div class="sm:text-right bg-green-50 p-3.5 sm:p-4 rounded-xl border border-green-300">
+                    <span class="text-xs text-slate-700 font-semibold block mb-1" id="ui-lbl-net-margin">Margine Lordo di Guadagno</span>
+                    <span class="text-2xl font-bold text-green-700" id="net-margin">€ 0.00 (0%)</span>
+                </div>
+            </div>
+
+            <!-- Prezzo di vendita e percentuale -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                <div>
+                    <label class="block text-slate-900 font-semibold mb-1" id="ui-lbl-sale-price">Prezzo di Vendita al Pubblico (€)</label>
+                    <input type="number" id="sale-price" value="9.00" step="0.5" min="0" oninput="calculateDrinkCost()" class="w-full px-3 py-2 rounded-xl text-base font-extrabold text-slate-900">
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex flex-col justify-center">
+                    <span class="text-slate-700 block mb-1 font-semibold" id="ui-lbl-cost-pct">Incidenza Drink Cost %</span>
+                    <span class="font-bold text-sm text-slate-900" id="drink-cost-percent">0.0%</span>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex flex-col justify-center">
+                    <span class="text-slate-700 block mb-1 font-semibold" id="ui-lbl-status">Stato Profitto</span>
+                    <span class="font-bold text-sm text-green-700 flex items-center gap-1.5" id="profit-status">
+                        <i class="fa-solid fa-circle-check"></i> Ottimo Margine
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEZIONE TABELLA INGREDIENTI -->
+        <section class="card-pro p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2 pro-title">
+                    <i class="fa-solid fa-whiskey-glass text-green-600 text-sm"></i> <span id="ui-lbl-ing-title">Composizione Ricetta & Costo Ingredienti</span>
+                </h3>
+                <button onclick="addIngredientRow()" class="px-3 py-1.5 rounded-lg bg-green-50 border border-green-300 text-green-700 text-xs font-bold hover:bg-green-100 transition-all cursor-pointer">
+                    <i class="fa-solid fa-plus mr-1"></i> <span id="ui-btn-add-ing">Aggiungi Ingrediente</span>
+                </button>
+            </div>
+
+            <!-- Tabella Ingredienti -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-900">
+                    <thead>
+                        <tr class="border-b border-slate-200 text-slate-700 font-semibold">
+                            <th class="pb-2" id="ui-th-ing">Ingrediente / Liquore</th>
+                            <th class="pb-2 w-28" id="ui-th-dose">Dose (ml)</th>
+                            <th class="pb-2 w-32" id="ui-th-price">Costo Bottiglia (€)</th>
+                            <th class="pb-2 w-28" id="ui-th-size">Formato (ml)</th>
+                            <th class="pb-2 w-28 text-right" id="ui-th-cost">Costo Dose</th>
+                            <th class="pb-2 w-10"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="ingredients-list" class="divide-y divide-slate-200">
+                        <!-- Generato via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SEZIONE EXTRA (Garnish, Ghiaccio, Cannuccia) -->
+        <section class="card-pro p-5 space-y-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2 pro-title">
+                <i class="fa-solid fa-ice-cream text-green-600 text-sm"></i> <span id="ui-lbl-extra-title">Consumabili & Decorazioni (Garnish)</span>
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                <div>
+                    <label class="block text-slate-900 font-semibold mb-1" id="ui-lbl-garnish">Decorazione / Garnish (€)</label>
+                    <input type="number" id="cost-garnish" value="0.25" step="0.05" min="0" oninput="calculateDrinkCost()" class="w-full px-3 py-2 rounded-xl font-bold">
+                    <p class="text-[11px] text-slate-600 mt-1" id="ui-sub-garnish">Es. scorza d'arancia, ciliegia, oliva</p>
+                </div>
+                <div>
+                    <label class="block text-slate-900 font-semibold mb-1" id="ui-lbl-ice">Costo Ghiaccio (€)</label>
+                    <input type="number" id="cost-ice" value="0.15" step="0.05" min="0" oninput="calculateDrinkCost()" class="w-full px-3 py-2 rounded-xl font-bold">
+                    <p class="text-[11px] text-slate-600 mt-1" id="ui-sub-ice">Cubo, sfera o ghiaccio tritato</p>
+                </div>
+                <div>
+                    <label class="block text-slate-900 font-semibold mb-1" id="ui-lbl-extra">Servizio / Cannuccia / Tovagliolo (€)</label>
+                    <input type="number" id="cost-extra" value="0.05" step="0.01" min="0" oninput="calculateDrinkCost()" class="w-full px-3 py-2 rounded-xl font-bold">
+                    <p class="text-[11px] text-slate-600 mt-1" id="ui-sub-extra">Materiale monouso o di servizio</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROCEDURA / PREPARAZIONE -->
+        <section class="card-pro p-5 space-y-3">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2 pro-title">
+                <i class="fa-solid fa-book-open text-green-600 text-sm"></i> <span id="ui-lbl-notes-title">Metodo di Preparazione & Note</span>
+            </h3>
+            <textarea id="cocktail-notes" rows="3" class="w-full px-3 py-2 rounded-xl text-xs font-medium text-slate-900 bg-white border border-slate-300 focus:border-green-600" placeholder="Inserisci il metodo (Build, Stir & Strain, Shake), il tipo di ghiaccio e guarnizione finale...">Metodo: Build. Versare gli ingredienti direttamente nel bicchiere tumbler basso colmo di ghiaccio a cubi. Mescolare delicatamente con il bar spoon e guarnire con una fetta o scorza d'arancia fresca.</textarea>
+        </section>
+
+    </main>
+
+    <!-- Footer Classico -->
+    <footer class="mt-8 border-t border-slate-300 py-4 text-center text-xs text-slate-600 bg-white">
+        Cocktail Cost & Recipe Lab • Professional Mixology Tool
+    </footer>
+
+    <script>
+        let currentLang = 'it';
+
+        const i18n = {
+            it: {
+                btnConv: "Convertitore",
+                btnGuide: "Guida",
+                gTitle: "Guida Utente & Manuale Operativo",
+                gStep1T: "1. Scegli o Crea",
+                gStep1D: "Seleziona uno dei 102 cocktail classici IBA dal menu o digita la tua ricetta originale.",
+                gStep2T: "2. Costi & Bottiglie",
+                gStep2D: "Imposta il costo e il formato (ml) della bottiglia per calcolare il costo esatto della singola dose.",
+                gStep3T: "3. Margine & Prezzo",
+                gStep3D: "Imposta il prezzo al pubblico per verificare istantaneamente l'incidenza Drink Cost % ed il margine.",
+                gStep4T: "4. Convertitore",
+                gStep4D: "Usa il convertitore rapido Oz/cl/ml integrato per ogni esigenza di dosaggio.",
+                convTitle: "Convertitore Rapido Unità Mixology",
+                lblOz: "Once Liquide (oz)",
+                lblCl: "Centilitri (cl)",
+                lblMl: "Millilitri (ml)",
+                lblRecipeSelect: "Scegli un Cocktail dal Ricettario (102 Classici IBA):",
+                optDefault: "-- Seleziona o Cerca Cocktail --",
+                lblCocktailName: "Nome del Cocktail / Ricetta",
+                lblCocktailGlass: "Bicchiere / Serve",
+                lblTotalCost: "Costo Totale Drink (Food/Drink Cost)",
+                lblNetMargin: "Margine Lordo di Guadagno",
+                lblSalePrice: "Prezzo di Vendita al Pubblico (€)",
+                lblCostPct: "Incidenza Drink Cost %",
+                lblStatus: "Stato Profitto",
+                lblIngTitle: "Composizione Ricetta & Costo Ingredienti",
+                btnAddIng: "Aggiungi Ingrediente",
+                thIng: "Ingrediente / Liquore",
+                thDose: "Dose (ml)",
+                thPrice: "Costo Bottiglia (€)",
+                thSize: "Formato (ml)",
+                thCost: "Costo Dose",
+                lblExtraTitle: "Consumabili & Decorazioni (Garnish)",
+                lblGarnish: "Decorazione / Garnish (€)",
+                subGarnish: "Es. scorza d'arancia, ciliegia, oliva",
+                lblIce: "Costo Ghiaccio (€)",
+                subIce: "Cubo, sfera o ghiaccio tritato",
+                lblExtra: "Servizio / Cannuccia / Tovagliolo (€)",
+                subExtra: "Materiale monouso o di servizio",
+                lblNotesTitle: "Metodo di Preparazione & Note",
+                optGreat: "Ottimo (Drink Cost Low)",
+                optGood: "Buono / Nella Media",
+                optHigh: "Drink Cost Alto (>30%)"
+            },
+            en: {
+                btnConv: "Converter",
+                btnGuide: "Guide",
+                gTitle: "User Guide & Operating Manual",
+                gStep1T: "1. Choose or Create",
+                gStep1D: "Select one of 102 classic IBA cocktails from the dropdown or type your own original recipe.",
+                gStep2T: "2. Costs & Bottles",
+                gStep2D: "Set bottle price and size (ml) to calculate single serving costs down to the penny.",
+                gStep3T: "3. Margin & Price",
+                gStep3D: "Set retail selling price to instantly check Drink Cost % incidence and gross margin.",
+                gStep4T: "4. Converter",
+                gStep4D: "Use the quick Oz/cl/ml converter integrated for all dosing needs.",
+                convTitle: "Quick Mixology Unit Converter",
+                lblOz: "Fluid Ounces (oz)",
+                lblCl: "Centiliters (cl)",
+                lblMl: "Milliliters (ml)",
+                lblRecipeSelect: "Choose a Cocktail from Menu (102 IBA Classics):",
+                optDefault: "-- Select or Search Cocktail --",
+                lblCocktailName: "Cocktail / Recipe Name",
+                lblCocktailGlass: "Glassware / Serve",
+                lblTotalCost: "Total Drink Cost (Food/Drink Cost)",
+                lblNetMargin: "Gross Profit Margin",
+                lblSalePrice: "Retail Sale Price (€)",
+                lblCostPct: "Drink Cost Incidence %",
+                lblStatus: "Profitability Status",
+                lblIngTitle: "Recipe Composition & Ingredient Cost",
+                btnAddIng: "Add Ingredient",
+                thIng: "Ingredient / Spirit",
+                thDose: "Dose (ml)",
+                thPrice: "Bottle Cost (€)",
+                thSize: "Bottle Size (ml)",
+                thCost: "Serving Cost",
+                lblExtraTitle: "Garnish & Consumables",
+                lblGarnish: "Garnish / Decoration (€)",
+                subGarnish: "e.g. orange peel, cherry, olive",
+                lblIce: "Ice Cost (€)",
+                subIce: "Cube, sphere or crushed ice",
+                lblExtra: "Straw / Napkin / Service (€)",
+                subExtra: "Disposable or service materials",
+                lblNotesTitle: "Preparation Method & Notes",
+                optGreat: "Great (Low Drink Cost)",
+                optGood: "Good / Average",
+                optHigh: "High Drink Cost (>30%)"
+            },
+            es: {
+                btnConv: "Convertidor",
+                btnGuide: "Guía",
+                gTitle: "Guía de Usuario y Manual Operativo",
+                gStep1T: "1. Elige o Crea",
+                gStep1D: "Selecciona uno de los 102 cócteles clásicos IBA del desplegable o escribe tu propia receta.",
+                gStep2T: "2. Costes y Botellas",
+                gStep2D: "Introduce el precio y volumen (ml) de la botella para calcular el coste exacto de la dosis.",
+                gStep3T: "3. Margen y Precio",
+                gStep3D: "Ajusta el precio de venta al público para verificar la incidencia del coste y tu margen bruto.",
+                gStep4T: "4. Convertidor",
+                gStep4D: "Utiliza el convertidor rápido Oz/cl/ml integrado.",
+                convTitle: "Convertidor Rápido de Unidades de Coctelería",
+                lblOz: "Onzas Líquidas (oz)",
+                lblCl: "Centilitros (cl)",
+                lblMl: "Mililitros (ml)",
+                lblRecipeSelect: "Elige un Cóctel del Recetario (102 Clásicos IBA):",
+                optDefault: "-- Selecciona o Busca Cóctel --",
+                lblCocktailName: "Nombre del Cóctel / Receta",
+                lblCocktailGlass: "Vaso / Servir",
+                lblTotalCost: "Coste Total del Cóctel",
+                lblNetMargin: "Margen Bruto de Beneficio",
+                lblSalePrice: "Precio de Venta al Público (€)",
+                lblCostPct: "Incidencia Drink Cost %",
+                lblStatus: "Estado de Rentabilidad",
+                lblIngTitle: "Composición de la Receta y Coste",
+                btnAddIng: "Añadir Ingrediente",
+                thIng: "Ingrediente / Licor",
+                thDose: "Dosis (ml)",
+                thPrice: "Coste Botella (€)",
+                thSize: "Formato (ml)",
+                thCost: "Coste Dosis",
+                lblExtraTitle: "Consumibles y Decoración (Garnish)",
+                lblGarnish: "Decoración / Garnish (€)",
+                subGarnish: "Ej. piel de naranja, cereza, aceituna",
+                lblIce: "Coste Hielo (€)",
+                subIce: "Cubo, esfera o hielo picado",
+                lblExtra: "Servicio / Pajita / Servilleta (€)",
+                subExtra: "Material desechable o de servicio",
+                lblNotesTitle: "Método de Preparación y Notas",
+                optGreat: "Excelente (Drink Cost Bajo)",
+                optGood: "Bueno / Promedio",
+                optHigh: "Drink Cost Alto (>30%)"
+            },
+            fr: {
+                btnConv: "Convertisseur",
+                btnGuide: "Guide",
+                gTitle: "Guide Utilisateur & Manuel Opérationnel",
+                gStep1T: "1. Choisir ou Créer",
+                gStep1D: "Sélectionnez l'un des 102 cocktails classiques IBA ou créez votre propre recette.",
+                gStep2T: "2. Coûts & Bouteilles",
+                gStep2D: "Définissez le prix et la taille (ml) de la bouteille pour calculer le coût exact.",
+                gStep3T: "3. Marge & Prix",
+                gStep3D: "Définissez le prix de vente public pour vérifier l'incidence du Drink Cost.",
+                gStep4T: "4. Convertisseur",
+                gStep4D: "Utilisez le convertisseur rapide Oz/cl/ml intégré.",
+                convTitle: "Convertisseur Rapide d'Unités Mixology",
+                lblOz: "Onces Liquides (oz)",
+                lblCl: "Centilitres (cl)",
+                lblMl: "Millilitres (ml)",
+                lblRecipeSelect: "Choisissez un Cocktail (102 Classiques IBA):",
+                optDefault: "-- Sélectionner ou Chercher un Cocktail --",
+                lblCocktailName: "Nom du Cocktail / Recette",
+                lblCocktailGlass: "Verre / Service",
+                lblTotalCost: "Coût Total du Cocktail",
+                lblNetMargin: "Marge Bénéficiaire Brute",
+                lblSalePrice: "Prix de Vente Public (€)",
+                lblCostPct: "Incidence Drink Cost %",
+                lblStatus: "Statut de Rentabilité",
+                lblIngTitle: "Composition de la Recette & Coût",
+                btnAddIng: "Ajouter un Ingrédient",
+                thIng: "Ingrédient / Alcool",
+                thDose: "Dose (ml)",
+                thPrice: "Coût Bouteille (€)",
+                thSize: "Format (ml)",
+                thCost: "Coût Dose",
+                lblExtraTitle: "Consommables & Décoration (Garnish)",
+                lblGarnish: "Décoration / Garnish (€)",
+                subGarnish: "Ex. zeste d'orange, cerise, olive",
+                lblIce: "Coût Glaçon (€)",
+                subIce: "Cube, sphère ou glace pilée",
+                lblExtra: "Service / Paille / Serviette (€)",
+                subExtra: "Matériel jetable ou de service",
+                lblNotesTitle: "Méthode de Préparation & Notes",
+                optGreat: "Excellent (Drink Cost Bas)",
+                optGood: "Bon / Dans la Moyenne",
+                optHigh: "Drink Cost Élevé (>30%)"
+            }
+        };
+
+        // Database ufficiale dei 102 cocktail IBA & Classici
+        const cocktailDatabase = {
+            "Alexander": { glass: "Coppetta Cocktail", ingredients: [{name: "Cognac", doseMl: 30, bottlePrice: 28, bottleMl: 700}, {name: "Crème de Cacao Scura", doseMl: 30, bottlePrice: 16, bottleMl: 700}, {name: "Panna Fresca", doseMl: 30, bottlePrice: 2.5, bottleMl: 500}], notes: "Metodo: Shake & Strain. Shakerare vigorosamente con ghiaccio e filtrare in coppetta fredda. Spolverare con noce moscata grattugiata." },
+            "Americano": { glass: "Tumbler Basso", ingredients: [{name: "Campari Bitter", doseMl: 30, bottlePrice: 16.5, bottleMl: 1000}, {name: "Vermouth Rosso", doseMl: 30, bottlePrice: 14, bottleMl: 750}, {name: "Soda Water", doseMl: 60, bottlePrice: 1.5, bottleMl: 1000}], notes: "Metodo: Build. Versare direttamente nel bicchiere colmo di ghiaccio, mescolare e guarnire con fetta d'arancia e scorza di limone." },
+            "Angel Face": { glass: "Coppetta Cocktail", ingredients: [{name: "Gin", doseMl: 30, bottlePrice: 22, bottleMl: 700}, {name: "Apricot Brandy", doseMl: 30, bottlePrice: 20, bottleMl: 700}, {name: "Calvados", doseMl: 30, bottlePrice: 25, bottleMl: 700}], notes: "Metodo: Shake & Strain. Shakerare tutti gli ingredienti con ghiaccio e filtrare in una coppetta fredda." },
+            "Aviation": { glass: "Coppetta Cocktail", ingredients: [{name: "Gin", doseMl: 45, bottlePrice: 22, bottleMl: 700}, {name: "Maraschino", doseMl: 15, bottlePrice: 24, bottleMl: 700}, {name: "Succo di Limone", doseMl: 15, bottlePrice: 3, bottleMl: 1000}, {name: "Crème de Violette", doseMl: 7.5, bottlePrice: 30, bottleMl: 700}], notes: "Metodo: Shake & Strain. Shakerare con ghiaccio e filtrare in coppetta." },
+            "Between the Sheets": { glass: "Coppetta Cocktail", ingredients: [{name: "Rum Bianco", doseMl: 30, bottlePrice: 18, bottleMl: 700}, {name: "Cognac / Brandy", doseMl: 30, bottlePrice: 28, bottleMl: 700}, {name: "Triple Sec / Cointreau", doseMl: 30, bottlePrice: 22, bottleMl: 700}, {name: "Succo di Limone", doseMl: 20, bottlePrice: 3, bottleMl: 1000}], notes: "Metodo: Shake & Strain. Shakerare con ghiaccio e servire in coppetta." },
+            "Boulevardier": { glass: "Tumbler Basso", ingredients: [{name: "Bourbon / Rye Whiskey", doseMl: 45, bottlePrice: 26, bottleMl: 700}, {name: "Campari Bitter", doseMl: 30, bottlePrice: 16.5, bottleMl: 1000}, {name: "Vermouth Rosso", doseMl: 30, bottlePrice: 14, bottleMl: 750}], notes: "Metodo: Stir & Strain. Mescolare nel mixing glass con ghiaccio e servire con scorza d'arancia." },
+            "Brandy Crusta": { glass: "Calice Crusta", ingredients: [{name: "Cognac / Brandy", doseMl: 50, bottlePrice: 28, bottleMl: 700}, {name: "Triple Sec", doseMl: 10, bottlePrice: 22, bottleMl: 700}, {name: "Succo di Limone", doseMl: 15, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Zucchero", doseMl: 7.5, bottlePrice: 6, bottleMl: 700}, {name: "Angostura", doseMl: 1, bottlePrice: 15, bottleMl: 200}], notes: "Metodo: Shake & Strain. Bordo zuccherato e scorza di limone intera a spirale all'interno." },
+            "Casino": { glass: "Coppetta Cocktail", ingredients: [{name: "Old Tom Gin", doseMl: 40, bottlePrice: 25, bottleMl: 700}, {name: "Maraschino", doseMl: 10, bottlePrice: 24, bottleMl: 700}, {name: "Succo di Limone", doseMl: 10, bottlePrice: 3, bottleMl: 1000}, {name: "Orange Bitters", doseMl: 2, bottlePrice: 15, bottleMl: 200}], notes: "Metodo: Shake & Strain. Shakerare e filtrare in coppetta con ciliegia al maraschino." },
+            "Clover Club": { glass: "Coppetta Cocktail", ingredients: [{name: "Gin", doseMl: 45, bottlePrice: 22, bottleMl: 700}, {name: "Sciroppo di Lampone", doseMl: 15, bottlePrice: 10, bottleMl: 500}, {name: "Succo di Limone", doseMl: 15, bottlePrice: 3, bottleMl: 1000}, {name: "Albume d'Uovo", doseMl: 15, bottlePrice: 2, bottleMl: 500}], notes: "Metodo: Shake & Strain. Dry shake e poi con ghiaccio." },
+            "Daiquiri": { glass: "Coppetta Cocktail", ingredients: [{name: "Rum Bianco", doseMl: 60, bottlePrice: 18, bottleMl: 700}, {name: "Succo di Lime Fresco", doseMl: 30, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Zucchero", doseMl: 15, bottlePrice: 6, bottleMl: 700}], notes: "Metodo: Shake & Strain. Shakerare energicamente con ghiaccio e filtrare." },
+            "Dry Martini": { glass: "Coppetta Martini", ingredients: [{name: "Gin", doseMl: 60, bottlePrice: 24, bottleMl: 700}, {name: "Dry Vermouth", doseMl: 10, bottlePrice: 13, bottleMl: 750}], notes: "Metodo: Stir & Strain. Mescolare nel mixing glass con abbondante ghiaccio e servire con oliva o twist di limone." },
+            "Gin Fizz": { glass: "Tumbler Alto", ingredients: [{name: "Gin", doseMl: 45, bottlePrice: 22, bottleMl: 700}, {name: "Succo di Limone", doseMl: 30, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Zucchero", doseMl: 15, bottlePrice: 6, bottleMl: 700}, {name: "Soda Water", doseMl: 90, bottlePrice: 1.5, bottleMl: 1000}], notes: "Metodo: Shake & Top. Shakerare i primi tre con ghiaccio, versare nel bicchiere e colmare con soda." },
+            "Hanky Panky": { glass: "Coppetta Cocktail", ingredients: [{name: "Gin", doseMl: 45, bottlePrice: 22, bottleMl: 700}, {name: "Vermouth Rosso", doseMl: 45, bottlePrice: 14, bottleMl: 750}, {name: "Fernet-Branca", doseMl: 5, bottlePrice: 18, bottleMl: 700}], notes: "Metodo: Stir & Strain. Mescolare nel mixing glass con ghiaccio e servire con scorza d'arancia." },
+            "John Collins": { glass: "Tumbler Alto", ingredients: [{name: "Old Tom Gin / London Dry", doseMl: 45, bottlePrice: 22, bottleMl: 700}, {name: "Succo di Limone", doseMl: 30, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Zucchero", doseMl: 15, bottlePrice: 6, bottleMl: 700}, {name: "Soda Water", doseMl: 60, bottlePrice: 1.5, bottleMl: 1000}], notes: "Metodo: Build. Versare sul ghiaccio nel tumbler alto e mescolare." },
+            "Last Word": { glass: "Coppetta Cocktail", ingredients: [{name: "Gin", doseMl: 22.5, bottlePrice: 22, bottleMl: 700}, {name: "Green Chartreuse", doseMl: 22.5, bottlePrice: 35, bottleMl: 700}, {name: "Maraschino", doseMl: 22.5, bottlePrice: 24, bottleMl: 700}, {name: "Succo di Lime", doseMl: 22.5, bottlePrice: 3, bottleMl: 1000}], notes: "Metodo: Shake & Strain. Shakerare con ghiaccio e filtrare in coppetta fredda." },
+            "Manhattan": { glass: "Coppetta Cocktail", ingredients: [{name: "Rye / Bourbon Whiskey", doseMl: 50, bottlePrice: 26, bottleMl: 700}, {name: "Vermouth Rosso", doseMl: 20, bottlePrice: 14, bottleMl: 750}, {name: "Angostura Bitters", doseMl: 2, bottlePrice: 15, bottleMl: 200}], notes: "Metodo: Stir & Strain. Mescolare nel mixing glass con ghiaccio e servire con ciliegia al maraschino." },
+            "Martinez": { glass: "Coppetta Cocktail", ingredients: [{name: "Old Tom Gin", doseMl: 45, bottlePrice: 25, bottleMl: 700}, {name: "Vermouth Rosso", doseMl: 45, bottlePrice: 14, bottleMl: 750}, {name: "Maraschino", doseMl: 7.5, bottlePrice: 24, bottleMl: 700}, {name: "Orange Bitters", doseMl: 1, bottlePrice: 15, bottleMl: 200}], notes: "Metodo: Stir & Strain. Mescolare con ghiaccio e servire con scorza di limone." },
+            "Mary Pickford": { glass: "Coppetta Cocktail", ingredients: [{name: "Rum Bianco", doseMl: 45, bottlePrice: 18, bottleMl: 700}, {name: "Succo d'Ananas", doseMl: 45, bottlePrice: 2.5, bottleMl: 1000}, {name: "Sciroppo di Granatina", doseMl: 7.5, bottlePrice: 8, bottleMl: 700}, {name: "Maraschino", doseMl: 5, bottlePrice: 24, bottleMl: 700}], notes: "Metodo: Shake & Strain. Shakerare con ghiaccio e filtrare." },
+            "Monkey Gland": { glass: "Coppetta Cocktail", ingredients: [{name: "Gin", doseMl: 50, bottlePrice: 22, bottleMl: 700}, {name: "Succo d'Arancia", doseMl: 30, bottlePrice: 2.5, bottleMl: 1000}, {name: "Sciroppo di Granatina", doseMl: 5, bottlePrice: 8, bottleMl: 700}, {name: "Assenzio (Absinthe)", doseMl: 2, bottlePrice: 40, bottleMl: 700}], notes: "Metodo: Shake & Strain. Shakerare con ghiaccio e filtrare in coppetta." },
+            "Negroni": { glass: "Tumbler Basso", ingredients: [{name: "Gin", doseMl: 30, bottlePrice: 22, bottleMl: 700}, {name: "Campari Bitter", doseMl: 30, bottlePrice: 16.5, bottleMl: 1000}, {name: "Vermouth Rosso Dolce", doseMl: 30, bottlePrice: 14, bottleMl: 750}], notes: "Metodo: Build. Versare nel bicchiere con ghiaccio, mescolare e guarnire con fetta d'arancia." },
+            "Old Fashioned": { glass: "Tumbler Basso", ingredients: [{name: "Bourbon / Rye Whiskey", doseMl: 45, bottlePrice: 26, bottleMl: 700}, {name: "Angostura Bitters", doseMl: 2, bottlePrice: 15, bottleMl: 200}, {name: "Zolletta di Zucchero", doseMl: 5, bottlePrice: 1, bottleMl: 500}, {name: "Acqua", doseMl: 5, bottlePrice: 0.5, bottleMl: 1000}], notes: "Metodo: Build. Sciogliere lo zucchero con Angostura e acqua, aggiungere ghiaccio e whiskey." },
+            "Paradise": { glass: "Coppetta Cocktail", ingredients: [{name: "Gin", doseMl: 35, bottlePrice: 22, bottleMl: 700}, {name: "Apricot Brandy", doseMl: 20, bottlePrice: 20, bottleMl: 700}, {name: "Succo d'Arancia", doseMl: 15, bottlePrice: 2.5, bottleMl: 1000}], notes: "Metodo: Shake & Strain. Shakerare con ghiaccio e filtrare in coppetta fredda." },
+            "Planter’s Punch": { glass: "Tumbler Alto", ingredients: [{name: "Rum Giamaicano Scuro", doseMl: 45, bottlePrice: 22, bottleMl: 700}, {name: "Succo di Lime", doseMl: 30, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Zucchero", doseMl: 15, bottlePrice: 6, bottleMl: 700}, {name: "Succo d'Ananas / Arancia", doseMl: 45, bottlePrice: 2.5, bottleMl: 1000}, {name: "Angostura", doseMl: 2, bottlePrice: 15, bottleMl: 200}], notes: "Metodo: Build & Stir. Servire su ghiaccio tritato con frutta fresca." },
+            "Porto Flip": { glass: "Coppetta Cocktail", ingredients: [{name: "Porto Rosso", doseMl: 45, bottlePrice: 15, bottleMl: 750}, {name: "Brandy / Cognac", doseMl: 15, bottlePrice: 28, bottleMl: 700}, {name: "Tuorlo d'Uovo", doseMl: 15, bottlePrice: 2, bottleMl: 500}], notes: "Metodo: Shake & Strain. Shakerare vigorosamente con ghiaccio e spolverare con noce moscata." },
+            "Ramos Fizz": { glass: "Tumbler Alto", ingredients: [{name: "Gin", doseMl: 45, bottlePrice: 22, bottleMl: 700}, {name: "Succo di Limone", doseMl: 15, bottlePrice: 3, bottleMl: 1000}, {name: "Succo di Lime", doseMl: 15, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Zucchero", doseMl: 30, bottlePrice: 6, bottleMl: 700}, {name: "Panna Fresca", doseMl: 60, bottlePrice: 2.5, bottleMl: 500}, {name: "Albume d'Uovo", doseMl: 15, bottlePrice: 2, bottleMl: 500}, {name: "Acqua di Fior d'Arancio", doseMl: 3, bottlePrice: 12, bottleMl: 250}, {name: "Soda Water", doseMl: 30, bottlePrice: 1.5, bottleMl: 1000}], notes: "Metodo: Shake & Top. Shakerare a lungo senza ghiaccio, poi con ghiaccio e colmare con soda." },
+            "Remember the Maine": { glass: "Coppetta Cocktail", ingredients: [{name: "Rye Whiskey", doseMl: 60, bottlePrice: 28, bottleMl: 700}, {name: "Vermouth Rosso", doseMl: 20, bottlePrice: 14, bottleMl: 750}, {name: "Cherry Heering", doseMl: 10, bottlePrice: 22, bottleMl: 700}, {name: "Assenzio", doseMl: 2, bottlePrice: 40, bottleMl: 700}], notes: "Metodo: Stir & Strain. Mescolare con ghiaccio in mixing glass." },
+            "Rusty Nail": { glass: "Tumbler Basso", ingredients: [{name: "Scotch Whisky", doseMl: 45, bottlePrice: 24, bottleMl: 700}, {name: "Drambuie", doseMl: 25, bottlePrice: 32, bottleMl: 700}], notes: "Metodo: Build. Versare direttamente nel bicchiere con ghiaccio e scorza di limone." },
+            "Sazerac": { glass: "Tumbler Basso", ingredients: [{name: "Cognac / Rye Whiskey", doseMl: 50, bottlePrice: 28, bottleMl: 700}, {name: "Assenzio (per risciacquo)", doseMl: 5, bottlePrice: 40, bottleMl: 700}, {name: "Zolletta di Zucchero", doseMl: 5, bottlePrice: 1, bottleMl: 500}, {name: "Peychaud's Bitters", doseMl: 3, bottlePrice: 16, bottleMl: 200}], notes: "Metodo: Stir. Sciogliere zucchero e bitters, aggiungere il distillato e servire in bicchiere profumato all'assenzio." },
+            "Sidecar": { glass: "Coppetta Cocktail", ingredients: [{name: "Cognac / Brandy", doseMl: 50, bottlePrice: 28, bottleMl: 700}, {name: "Cointreau / Triple Sec", doseMl: 20, bottlePrice: 22, bottleMl: 700}, {name: "Succo di Limone", doseMl: 20, bottlePrice: 3, bottleMl: 1000}], notes: "Metodo: Shake & Strain. Shakerare con ghiaccio e filtrare in coppetta." },
+            "Stinger": { glass: "Tumbler Basso", ingredients: [{name: "Brandy / Cognac", doseMl: 50, bottlePrice: 28, bottleMl: 700}, {name: "Crème de Menthe Bianca", doseMl: 20, bottlePrice: 16, bottleMl: 700}], notes: "Metodo: Stir o Shake con ghiaccio tritato direttamente nel bicchiere." },
+            "Tuxedo": { glass: "Coppetta Cocktail", ingredients: [{name: "Old Tom Gin", doseMl: 30, bottlePrice: 25, bottleMl: 700}, {name: "Dry Vermouth", doseMl: 30, bottlePrice: 13, bottleMl: 750}, {name: "Maraschino", doseMl: 5, bottlePrice: 24, bottleMl: 700}, {name: "Assenzio", doseMl: 2, bottlePrice: 40, bottleMl: 700}, {name: "Orange Bitters", doseMl: 2, bottlePrice: 15, bottleMl: 200}], notes: "Metodo: Stir & Strain. Mescolare con ghiaccio e servire in coppetta." },
+            "Vieux Carré": { glass: "Tumbler Basso", ingredients: [{name: "Rye Whiskey", doseMl: 30, bottlePrice: 28, bottleMl: 700}, {name: "Cognac", doseMl: 30, bottlePrice: 28, bottleMl: 700}, {name: "Vermouth Rosso", doseMl: 30, bottlePrice: 14, bottleMl: 750}, {name: "Bénédictine", doseMl: 7.5, bottlePrice: 30, bottleMl: 700}, {name: "Peychaud's Bitters", doseMl: 2, bottlePrice: 16, bottleMl: 200}], notes: "Metodo: Stir & Strain. Mescolare nel mixing glass con ghiaccio." },
+            "Whiskey Sour": { glass: "Tumbler Basso", ingredients: [{name: "Bourbon Whiskey", doseMl: 60, bottlePrice: 25, bottleMl: 700}, {name: "Succo di Limone Fresco", doseMl: 25, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Zucchero", doseMl: 20, bottlePrice: 6, bottleMl: 700}, {name: "Albume d'Uovo (Opzionale)", doseMl: 15, bottlePrice: 2, bottleMl: 500}], notes: "Metodo: Shake & Strain. Dry shake senza ghiaccio, poi shakerare con ghiaccio e filtrare nel bicchiere." },
+            "White Lady": { glass: "Coppetta Cocktail", ingredients: [{name: "Gin", doseMl: 40, bottlePrice: 22, bottleMl: 700}, {name: "Triple Sec / Cointreau", doseMl: 30, bottlePrice: 22, bottleMl: 700}, {name: "Succo di Limone", doseMl: 20, bottlePrice: 3, bottleMl: 1000}], notes: "Metodo: Shake & Strain. Shakerare con ghiaccio e filtrare in coppetta." },
+            "Bellini": { glass: "Flute", ingredients: [{name: "Prosecco / Spumante", doseMl: 100, bottlePrice: 9, bottleMl: 750}, {name: "Purè di Pesca Bianca", doseMl: 50, bottlePrice: 4, bottleMl: 750}], notes: "Metodo: Stir. Versare delicatamente nel flute ghiacciato e mescolare piano." },
+            "Black Russian": { glass: "Tumbler Basso", ingredients: [{name: "Vodka", doseMl: 50, bottlePrice: 19, bottleMl: 700}, {name: "Kahlúa / Liquore al Caffè", doseMl: 20, bottlePrice: 17, bottleMl: 700}], notes: "Metodo: Build. Versare direttamente nel bicchiere colmo di ghiaccio e mescolare." },
+            "Bloody Mary": { glass: "Tumbler Alto / Highball", ingredients: [{name: "Vodka", doseMl: 45, bottlePrice: 19, bottleMl: 700}, {name: "Succo di Pomodoro", doseMl: 90, bottlePrice: 3, bottleMl: 1000}, {name: "Succo di Limone Fresco", doseMl: 15, bottlePrice: 3, bottleMl: 1000}, {name: "Salsa Worcestershire", doseMl: 5, bottlePrice: 8, bottleMl: 150}, {name: "Tabasco", doseMl: 2, bottlePrice: 9, bottleMl: 150}, {name: "Sale & Pepe", doseMl: 1, bottlePrice: 2, bottleMl: 500}], notes: "Metodo: Roll. Versare gli ingredienti nel mixing glass con ghiaccio e 'rollare' delicatamente tra i bicchieri. Servire con gambo di sedano e spicchio di limone." },
+            "Caipirinha": { glass: "Tumbler Basso", ingredients: [{name: "Cachaça", doseMl: 60, bottlePrice: 18, bottleMl: 700}, {name: "Lime a Pezzi", doseMl: 40, bottlePrice: 3, bottleMl: 1000}, {name: "Zucchero di Canna Bianco", doseMl: 15, bottlePrice: 1, bottleMl: 1000}], notes: "Metodo: Muddle & Build. Pestar lime e zucchero, aggiungere ghiaccio e cachaça." },
+            "Cardinale": { glass: "Coppetta Cocktail", ingredients: [{name: "Gin", doseMl: 40, bottlePrice: 22, bottleMl: 700}, {name: "Campari Bitter", doseMl: 15, bottlePrice: 16.5, bottleMl: 1000}, {name: "Dry Vermouth", doseMl: 15, bottlePrice: 13, bottleMl: 750}], notes: "Metodo: Stir & Strain. Variante secca del Negroni con Dry Vermouth." },
+            "Champagne Cocktail": { glass: "Flute", ingredients: [{name: "Champagne / Spumante Brut", doseMl: 90, bottlePrice: 18, bottleMl: 750}, {name: "Cognac", doseMl: 10, bottlePrice: 28, bottleMl: 700}, {name: "Angostura Bitters", doseMl: 3, bottlePrice: 15, bottleMl: 200}, {name: "Zolletta di Zucchero", doseMl: 5, bottlePrice: 1, bottleMl: 500}], notes: "Metodo: Build nel flute. Imbeccare la zolletta con Angostura, aggiungere cognac e colmare con Champagne." },
+            "Corpse Reviver #2": { glass: "Coppetta Cocktail", ingredients: [{name: "Gin", doseMl: 30, bottlePrice: 22, bottleMl: 700}, {name: "Cointreau", doseMl: 30, bottlePrice: 22, bottleMl: 700}, {name: "Lillet Blanc", doseMl: 30, bottlePrice: 15, bottleMl: 750}, {name: "Succo di Limone", doseMl: 30, bottlePrice: 3, bottleMl: 1000}, {name: "Assenzio", doseMl: 2, bottlePrice: 40, bottleMl: 700}], notes: "Metodo: Shake & Strain. Shakerare con ghiaccio e filtrare in coppetta." },
+            "Cosmopolitan": { glass: "Coppetta Martini", ingredients: [{name: "Vodka Citron", doseMl: 40, bottlePrice: 20, bottleMl: 700}, {name: "Cointreau / Triple Sec", doseMl: 15, bottlePrice: 22, bottleMl: 700}, {name: "Succo di Lime", doseMl: 15, bottlePrice: 3, bottleMl: 1000}, {name: "Succo di Mirtillo Rosso (Cranberry)", doseMl: 30, bottlePrice: 3.5, bottleMl: 1000}], notes: "Metodo: Shake & Strain. Shakerare con ghiaccio e filtrare in coppetta fredda. Guarnire con scorza di lime." },
+            "Cuba Libre": { glass: "Tumbler Alto", ingredients: [{name: "Rum Scurò / Oro", doseMl: 50, bottlePrice: 18, bottleMl: 700}, {name: "Coca-Cola", doseMl: 120, bottlePrice: 2, bottleMl: 1000}, {name: "Succo di Lime", doseMl: 10, bottlePrice: 3, bottleMl: 1000}], notes: "Metodo: Build. Versare su ghiaccio e guarnire con spicchio di lime." },
+            "French 75": { glass: "Flute", ingredients: [{name: "Gin", doseMl: 30, bottlePrice: 22, bottleMl: 700}, {name: "Succo di Limone", doseMl: 15, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Zucchero", doseMl: 15, bottlePrice: 6, bottleMl: 700}, {name: "Champagne", doseMl: 60, bottlePrice: 18, bottleMl: 750}], notes: "Metodo: Shake & Top. Shakerare gin, limone e zucchero, filtrare nel flute e colmare con Champagne." },
+            "French Connection": { glass: "Tumbler Basso", ingredients: [{name: "Cognac", doseMl: 35, bottlePrice: 28, bottleMl: 700}, {name: "Amaretto di Saronno", doseMl: 35, bottlePrice: 18, bottleMl: 700}], notes: "Metodo: Build. Versare direttamente nel bicchiere con ghiaccio." },
+            "Garibaldi": { glass: "Tumbler Alto", ingredients: [{name: "Campari Bitter", doseMl: 50, bottlePrice: 16.5, bottleMl: 1000}, {name: "Succo d'Arancia Fresco", doseMl: 120, bottlePrice: 3, bottleMl: 1000}], notes: "Metodo: Build & Stir. Mescolare delicatamente con ghiaccio e fetta d'arancia." },
+            "Grasshopper": { glass: "Coppetta Cocktail", ingredients: [{name: "Crème de Menthe Verde", doseMl: 20, bottlePrice: 16, bottleMl: 700}, {name: "Crème de Cacao Scura", doseMl: 20, bottlePrice: 16, bottleMl: 700}, {name: "Panna Fresca", doseMl: 20, bottlePrice: 2.5, bottleMl: 500}], notes: "Metodo: Shake & Strain. Shakerare con ghiaccio e filtrare in coppetta." },
+            "Hemingway Special": { glass: "Coppetta Cocktail", ingredients: [{name: "Rum Bianco", doseMl: 60, bottlePrice: 18, bottleMl: 700}, {name: "Succo di Pompelmo", doseMl: 40, bottlePrice: 3, bottleMl: 1000}, {name: "Liquore Maraschino", doseMl: 15, bottlePrice: 24, bottleMl: 700}, {name: "Succo di Lime", doseMl: 15, bottlePrice: 3, bottleMl: 1000}], notes: "Metodo: Shake & Strain. Shakerare con ghiaccio e filtrare." },
+            "Horse’s Neck": { glass: "Tumbler Alto", ingredients: [{name: "Brandy / Cognac / Bourbon", doseMl: 40, bottlePrice: 25, bottleMl: 700}, {name: "Ginger Ale", doseMl: 120, bottlePrice: 2.5, bottleMl: 750}, {name: "Angostura (opzionale)", doseMl: 2, bottlePrice: 15, bottleMl: 200}], notes: "Metodo: Build. Decorare con lunga spirale di scorza di limone sul bordo." },
+            "Irish Coffee": { glass: "Mug / Bicchiere Caldo", ingredients: [{name: "Irish Whiskey", doseMl: 40, bottlePrice: 26, bottleMl: 700}, {name: "Caffè Caldo", doseMl: 80, bottlePrice: 1, bottleMl: 1000}, {name: "Zucchero di Canna", doseMl: 10, bottlePrice: 1, bottleMl: 1000}, {name: "Panna Fresca Semimontata", doseMl: 30, bottlePrice: 2.5, bottleMl: 500}], notes: "Metodo: Build. Sciogliere zucchero nel caffè caldo e whiskey, poi adagiare la panna in superficie." },
+            "Kir": { glass: "Calice da Vino", ingredients: [{name: "Crème de Cassis", doseMl: 20, bottlePrice: 18, bottleMl: 700}, {name: "Vino Bianco Secco", doseMl: 100, bottlePrice: 7, bottleMl: 750}], notes: "Metodo: Build nel calice freddo. Versare cassis e colmare con vino bianco." },
+            "Long Island Iced Tea": { glass: "Tumbler Alto", ingredients: [{name: "Vodka", doseMl: 15, bottlePrice: 19, bottleMl: 700}, {name: "Rum Bianco", doseMl: 15, bottlePrice: 18, bottleMl: 700}, {name: "Tequila", doseMl: 15, bottlePrice: 25, bottleMl: 700}, {name: "Gin", doseMl: 15, bottlePrice: 22, bottleMl: 700}, {name: "Triple Sec", doseMl: 15, bottlePrice: 22, bottleMl: 700}, {name: "Succo di Limone", doseMl: 25, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Zucchero", doseMl: 15, bottlePrice: 6, bottleMl: 700}, {name: "Cola", doseMl: 30, bottlePrice: 2, bottleMl: 1000}], notes: "Metodo: Build. Shakerare gli alcolici con limone e zucchero, versare su ghiaccio e top di Cola." },
+            "Mai Tai": { glass: "Tumbler Basso / Mug", ingredients: [{name: "Rum Ambrato Giamaicano", doseMl: 30, bottlePrice: 22, bottleMl: 700}, {name: "Rum Agricolo", doseMl: 30, bottlePrice: 25, bottleMl: 700}, {name: "Orange Curaçao", doseMl: 15, bottlePrice: 24, bottleMl: 700}, {name: "Sciroppo di Orgeat (Mandorla)", doseMl: 15, bottlePrice: 12, bottleMl: 700}, {name: "Succo di Lime", doseMl: 30, bottlePrice: 3, bottleMl: 1000}], notes: "Metodo: Shake & Pour. Shakerare con ghiaccio e versare nel bicchiere. Menta e lime." },
+            "Margarita": { glass: "Coppetta Margarita", ingredients: [{name: "Tequila 100% Agave", doseMl: 50, bottlePrice: 25, bottleMl: 700}, {name: "Cointreau / Triple Sec", doseMl: 20, bottlePrice: 22, bottleMl: 700}, {name: "Succo di Lime", doseMl: 15, bottlePrice: 3, bottleMl: 1000}], notes: "Metodo: Shake & Strain. Crosta di sale sul bordo, shakerare con ghiaccio." },
+            "Mimosa": { glass: "Flute", ingredients: [{name: "Champagne / Spumante", doseMl: 75, bottlePrice: 9, bottleMl: 750}, {name: "Succo d'Arancia Fresco", doseMl: 75, bottlePrice: 2.5, bottleMl: 1000}], notes: "Metodo: Build. Versare nel flute freddo parti uguali." },
+            "Mint Julep": { glass: "Julep Cup (Metallo)", ingredients: [{name: "Bourbon Whiskey", doseMl: 60, bottlePrice: 25, bottleMl: 700}, {name: "Menta Fresca (Foglie)", doseMl: 12, bottlePrice: 2, bottleMl: 100}, {name: "Sciroppo di Zucchero", doseMl: 10, bottlePrice: 6, bottleMl: 700}, {name: "Acqua", doseMl: 10, bottlePrice: 0.5, bottleMl: 1000}], notes: "Metodo: Muddle & Build. Pestar delicatamente la menta, aggiungere ghiaccio tritato e bourbon." },
+            "Mojito": { glass: "Tumbler Alto / Highball", ingredients: [{name: "Rum Bianco Cubano", doseMl: 50, bottlePrice: 18, bottleMl: 700}, {name: "Succo di Lime", doseMl: 25, bottlePrice: 3, bottleMl: 1000}, {name: "Menta Fresca", doseMl: 10, bottlePrice: 2, bottleMl: 100}, {name: "Zucchero di Canna", doseMl: 10, bottlePrice: 1, bottleMl: 1000}, {name: "Soda Water", doseMl: 60, bottlePrice: 1, bottleMl: 1000}], notes: "Metodo: Muddle & Build. Pestar delicatamente menta, zucchero e lime. Aggiungere ghiaccio, rum e soda. Mescolare." },
+            "Moscow Mule": { glass: "Tazza di Rame / Mug", ingredients: [{name: "Vodka", doseMl: 45, bottlePrice: 19, bottleMl: 700}, {name: "Succo di Lime", doseMl: 15, bottlePrice: 3, bottleMl: 1000}, {name: "Ginger Beer", doseMl: 120, bottlePrice: 2.5, bottleMl: 750}], notes: "Metodo: Build. Versare vodka e lime nella tazza con ghiaccio, colmare con Ginger Beer e guarnire con cetriolo o menta." },
+            "Negroni Sbagliato": { glass: "Tumbler Basso", ingredients: [{name: "Campari Bitter", doseMl: 30, bottlePrice: 16.5, bottleMl: 1000}, {name: "Vermouth Rosso", doseMl: 30, bottlePrice: 14, bottleMl: 750}, {name: "Prosecco / Spumante", doseMl: 30, bottlePrice: 9, bottleMl: 750}], notes: "Metodo: Build. Versare nel bicchiere con ghiaccio e scorza d'arancia." },
+            "Piña Colada": { glass: "Hurricane", ingredients: [{name: "Rum Bianco", doseMl: 50, bottlePrice: 18, bottleMl: 700}, {name: "Crema di Cocco", doseMl: 30, bottlePrice: 8, bottleMl: 1000}, {name: "Succo d'Ananas", doseMl: 90, bottlePrice: 2.5, bottleMl: 1000}], notes: "Metodo: Blend / Shake. Frullare con ghiaccio tritato o shakerare energicamente. Servire con fetta d'ananas." },
+            "Pisco Sour": { glass: "Coppetta Cocktail", ingredients: [{name: "Pisco", doseMl: 60, bottlePrice: 24, bottleMl: 700}, {name: "Succo di Lime", doseMl: 30, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Zucchero", doseMl: 20, bottlePrice: 6, bottleMl: 700}, {name: "Albume d'Uovo", doseMl: 15, bottlePrice: 2, bottleMl: 500}], notes: "Metodo: Shake & Strain. Shakerare vigorosamente con ghiaccio e gocce di Angostura sopra." },
+            "Sea Breeze": { glass: "Tumbler Alto", ingredients: [{name: "Vodka", doseMl: 40, bottlePrice: 19, bottleMl: 700}, {name: "Succo di Mirtillo Rosso", doseMl: 120, bottlePrice: 3.5, bottleMl: 1000}, {name: "Succo di Pompelmo", doseMl: 30, bottlePrice: 3, bottleMl: 1000}], notes: "Metodo: Build. Versare direttamente nel bicchiere con ghiaccio." },
+            "Sex on the Beach": { glass: "Tumbler Alto", ingredients: [{name: "Vodka", doseMl: 40, bottlePrice: 19, bottleMl: 700}, {name: "Peach Schnapps (Pesca)", doseMl: 20, bottlePrice: 16, bottleMl: 700}, {name: "Succo d'Arancia", doseMl: 40, bottlePrice: 2.5, bottleMl: 1000}, {name: "Succo di Mirtillo", doseMl: 40, bottlePrice: 3.5, bottleMl: 1000}], notes: "Metodo: Build. Servire nel tumbler alto con ghiaccio e frutta fresca." },
+            "Singapore Sling": { glass: "Tumbler Alto", ingredients: [{name: "Gin", doseMl: 30, bottlePrice: 22, bottleMl: 700}, {name: "Cherry Brandy", doseMl: 15, bottlePrice: 22, bottleMl: 700}, {name: "Cointreau", doseMl: 7.5, bottlePrice: 22, bottleMl: 700}, {name: "Bénédictine", doseMl: 7.5, bottlePrice: 30, bottleMl: 700}, {name: "Succo d'Ananas", doseMl: 120, bottlePrice: 2.5, bottleMl: 1000}, {name: "Succo di Lime", doseMl: 15, bottlePrice: 3, bottleMl: 1000}, {name: "Granatina", doseMl: 10, bottlePrice: 8, bottleMl: 700}], notes: "Metodo: Shake & Top. Shakerare e colmare con soda." },
+            "Tequila Sunrise": { glass: "Tumbler Alto", ingredients: [{name: "Tequila", doseMl: 45, bottlePrice: 25, bottleMl: 700}, {name: "Succo d'Arancia", doseMl: 90, bottlePrice: 2.5, bottleMl: 1000}, {name: "Sciroppo di Granatina", doseMl: 15, bottlePrice: 8, bottleMl: 700}], notes: "Metodo: Build. Versare tequila e arancia sul ghiaccio, poi far colare la granatina sul fondo." },
+            "Tommy’s Margarita": { glass: "Tumbler Basso", ingredients: [{name: "Tequila 100% Agave", doseMl: 60, bottlePrice: 25, bottleMl: 700}, {name: "Succo di Lime", doseMl: 30, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo d'Agave", doseMl: 15, bottlePrice: 14, bottleMl: 700}], notes: "Metodo: Shake & Strain. Versare in bicchiere con ghiaccio fresco." },
+            "Vesper": { glass: "Coppetta Martini", ingredients: [{name: "Gin", doseMl: 45, bottlePrice: 22, bottleMl: 700}, {name: "Vodka", doseMl: 15, bottlePrice: 19, bottleMl: 700}, {name: "Lillet Blanc", doseMl: 7.5, bottlePrice: 15, bottleMl: 750}], notes: "Metodo: Shake & Strain. Reso celebre da James Bond." },
+            "Zombie": { glass: "Tall Tiki Glass", ingredients: [{name: "Rum Giamaicano", doseMl: 45, bottlePrice: 22, bottleMl: 700}, {name: "Rum Portoricano", doseMl: 45, bottlePrice: 18, bottleMl: 700}, {name: "Rum Overproof", doseMl: 30, bottlePrice: 32, bottleMl: 700}, {name: "Succo di Lime", doseMl: 20, bottlePrice: 3, bottleMl: 1000}, {name: "Falernum", doseMl: 15, bottlePrice: 24, bottleMl: 700}, {name: "Succo d'Ananas", doseMl: 30, bottlePrice: 2.5, bottleMl: 1000}, {name: "Grenadine", doseMl: 10, bottlePrice: 8, bottleMl: 700}, {name: "Absinthe", doseMl: 2, bottlePrice: 40, bottleMl: 700}], notes: "Metodo: Blend con ghiaccio tritato." },
+            "Aperol Spritz (o Spritz)": { glass: "Tumbler Alto / Calice", ingredients: [{name: "Prosecco / Spumante", doseMl: 90, bottlePrice: 9, bottleMl: 750}, {name: "Aperol", doseMl: 60, bottlePrice: 14, bottleMl: 1000}, {name: "Soda Water", doseMl: 30, bottlePrice: 1.5, bottleMl: 1000}], notes: "Metodo: Build. Versare su ghiaccio nel calice, mescolare e guarnire con fetta d'arancia." },
+            "B-52": { glass: "Bicchiere Shot", ingredients: [{name: "Kahlúa / Caffè", doseMl: 20, bottlePrice: 17, bottleMl: 700}, {name: "Baileys Irish Cream", doseMl: 20, bottlePrice: 16, bottleMl: 700}, {name: "Grand Marnier", doseMl: 20, bottlePrice: 26, bottleMl: 700}], notes: "Metodo: Layering. Stratificare delicatamente nel bicchierino da shot nell'ordine." },
+            "Barracuda": { glass: "Tumbler Alto / Tiki", ingredients: [{name: "Rum Oro", doseMl: 45, bottlePrice: 20, bottleMl: 700}, {name: "Galliano L'Autentico", doseMl: 15, bottlePrice: 32, bottleMl: 700}, {name: "Succo d'Ananas", doseMl: 60, bottlePrice: 2.5, bottleMl: 1000}, {name: "Succo di Lime", doseMl: 15, bottlePrice: 3, bottleMl: 1000}, {name: "Prosecco", doseMl: 60, bottlePrice: 9, bottleMl: 750}], notes: "Metodo: Shake & Top. Shakerare i primi quattro con ghiaccio, versare nel bicchiere e colmare con Prosecco." },
+            "Bee’s Knees": { glass: "Coppetta Cocktail", ingredients: [{name: "Gin", doseMl: 60, bottlePrice: 22, bottleMl: 700}, {name: "Succo di Limone", doseMl: 22.5, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Miele", doseMl: 22.5, bottlePrice: 8, bottleMl: 500}], notes: "Metodo: Shake & Strain. Shakerare con ghiaccio e filtrare in coppetta." },
+            "Bramble": { glass: "Tumbler Basso", ingredients: [{name: "Gin", doseMl: 50, bottlePrice: 22, bottleMl: 700}, {name: "Succo di Limone", doseMl: 25, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Zucchero", doseMl: 12.5, bottlePrice: 6, bottleMl: 700}, {name: "Crème de Mûre (Mora)", doseMl: 15, bottlePrice: 18, bottleMl: 700}], notes: "Metodo: Build su ghiaccio tritato. Irrorare la crème de mûre in superficie." },
+            "Canchanchara": { glass: "Tumbler Basso / Mug", ingredients: [{name: "Rum", doseMl: 60, bottlePrice: 18, bottleMl: 700}, {name: "Succo di Lime", doseMl: 15, bottlePrice: 3, bottleMl: 1000}, {name: "Miele", doseMl: 15, bottlePrice: 8, bottleMl: 500}, {name: "Acqua", doseMl: 15, bottlePrice: 0.5, bottleMl: 1000}], notes: "Metodo: Build. Mescolare miele, lime e acqua, aggiungere rum e ghiaccio tritato." },
+            "Chartreuse Swizzle": { glass: "Tall Glass", ingredients: [{name: "Green Chartreuse", doseMl: 60, bottlePrice: 35, bottleMl: 700}, {name: "Succo di Lime", doseMl: 30, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo d'Ananas", doseMl: 30, bottlePrice: 8, bottleMl: 700}, {name: "Falernum", doseMl: 15, bottlePrice: 24, bottleMl: 700}], notes: "Metodo: Swizzle con ghiaccio tritato nel bicchiere alto." },
+            "Dark ’N’ Stormy": { glass: "Tumbler Alto", ingredients: [{name: "Gosling's Black Seal Rum", doseMl: 60, bottlePrice: 24, bottleMl: 700}, {name: "Ginger Beer", doseMl: 100, bottlePrice: 2.5, bottleMl: 750}], notes: "Metodo: Build. Versare Ginger Beer su ghiaccio e far galleggiare il rum scuro sopra." },
+            "Dirty Martini": { glass: "Coppetta Martini", ingredients: [{name: "Gin o Vodka", doseMl: 60, bottlePrice: 22, bottleMl: 700}, {name: "Dry Vermouth", doseMl: 10, bottlePrice: 13, bottleMl: 750}, {name: "Salamoia di Olive", doseMl: 15, bottlePrice: 4, bottleMl: 500}], notes: "Metodo: Stir & Strain. Mescolare con ghiaccio in mixing glass e olive verdi." },
+            "Don’s Special Daiquiri": { glass: "Coppetta Cocktail", ingredients: [{name: "Rum Oro", doseMl: 45, bottlePrice: 20, bottleMl: 700}, {name: "Rum Scuro Giamaicano", doseMl: 15, bottlePrice: 22, bottleMl: 700}, {name: "Sciroppo di Passion Fruit", doseMl: 15, bottlePrice: 10, bottleMl: 700}, {name: "Sciroppo di Miele", doseMl: 15, bottlePrice: 8, bottleMl: 500}, {name: "Succo di Lime", doseMl: 25, bottlePrice: 3, bottleMl: 1000}], notes: "Metodo: Shake & Strain. Shakerare con ghiaccio e filtrare." },
+            "Espresso Martini": { glass: "Coppetta Cocktail", ingredients: [{name: "Vodka", doseMl: 50, bottlePrice: 19, bottleMl: 700}, {name: "Kahlúa / Liquore al Caffè", doseMl: 30, bottlePrice: 17, bottleMl: 700}, {name: "Espresso di Caffè Fresco", doseMl: 30, bottlePrice: 1, bottleMl: 1000}, {name: "Sciroppo di Zucchero", doseMl: 10, bottlePrice: 6, bottleMl: 700}], notes: "Metodo: Shake & Strain. Shakerare vigorosamente con ghiaccio per ottenere una ricca crema." },
+            "Fernandito": { glass: "Tumbler Basso", ingredients: [{name: "Fernet-Branca", doseMl: 50, bottlePrice: 18, bottleMl: 700}, {name: "Coca-Cola", doseMl: 150, bottlePrice: 2, bottleMl: 1000}], notes: "Metodo: Build. Popolare in Argentina, versare fernet e cola su abbondante ghiaccio." },
+            "French Martini": { glass: "Coppetta Martini", ingredients: [{name: "Vodka", doseMl: 45, bottlePrice: 19, bottleMl: 700}, {name: "Chambord (Lampone)", doseMl: 15, bottlePrice: 22, bottleMl: 700}, {name: "Succo d'Ananas", doseMl: 15, bottlePrice: 2.5, bottleMl: 1000}], notes: "Metodo: Shake & Strain. Shakerare con ghiaccio per creare una ricca schiuma." },
+            "Gin Basil Smash": { glass: "Tumbler Basso", ingredients: [{name: "Gin", doseMl: 60, bottlePrice: 22, bottleMl: 700}, {name: "Succo di Limone", doseMl: 25, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Zucchero", doseMl: 20, bottlePrice: 6, bottleMl: 700}, {name: "Basilico Fresco", doseMl: 12, bottlePrice: 2, bottleMl: 100}], notes: "Metodo: Muddle & Shake. Pestare il basilico con limone e zucchero, aggiungere gin e ghiaccio." },
+            "Grand Margarita": { glass: "Coppetta Margarita", ingredients: [{name: "Tequila", doseMl: 45, bottlePrice: 25, bottleMl: 700}, {name: "Grand Marnier", doseMl: 22.5, bottlePrice: 30, bottleMl: 700}, {name: "Succo di Lime", doseMl: 22.5, bottlePrice: 3, bottleMl: 1000}], notes: "Metodo: Shake & Strain. Variante ricca con Grand Marnier al posto del Triple Sec." },
+            "IBA Tiki": { glass: "Hurricane / Tiki Glass", ingredients: [{name: "Rum Scuro", doseMl: 50, bottlePrice: 22, bottleMl: 700}, {name: "Succo d'Ananas", doseMl: 60, bottlePrice: 2.5, bottleMl: 1000}, {name: "Succo di Lime", doseMl: 25, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Mandorla", doseMl: 15, bottlePrice: 12, bottleMl: 700}], notes: "Metodo: Shake & Pour. Servire su ghiaccio tritato." },
+            "Illegal": { glass: "Coppetta Cocktail", ingredients: [{name: "Mezcal", doseMl: 30, bottlePrice: 32, bottleMl: 700}, {name: "Overproof White Rum", doseMl: 15, bottlePrice: 32, bottleMl: 700}, {name: "Falernum", doseMl: 15, bottlePrice: 24, bottleMl: 700}, {name: "Succo di Lime", doseMl: 20, bottlePrice: 3, bottleMl: 1000}], notes: "Metodo: Shake & Strain." },
+            "Jungle Bird": { glass: "Tumbler Basso / Tiki", ingredients: [{name: "Rum Scuro o Black Rum", doseMl: 45, bottlePrice: 22, bottleMl: 700}, {name: "Campari Bitter", doseMl: 22.5, bottlePrice: 16.5, bottleMl: 1000}, {name: "Succo d'Ananas", doseMl: 45, bottlePrice: 2.5, bottleMl: 1000}, {name: "Succo di Lime", doseMl: 15, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Zucchero", doseMl: 15, bottlePrice: 6, bottleMl: 700}], notes: "Metodo: Shake & Strain. Ottimo bilanciamento tra amaro e tropicale." },
+            "Kamikaze": { glass: "Bicchiere Shot", ingredients: [{name: "Vodka", doseMl: 30, bottlePrice: 19, bottleMl: 700}, {name: "Triple Sec", doseMl: 15, bottlePrice: 22, bottleMl: 700}, {name: "Succo di Lime", doseMl: 15, bottlePrice: 3, bottleMl: 1000}], notes: "Metodo: Shake & Strain. Servito come shot o in coppetta." },
+            "Lemon Drop Martini": { glass: "Coppetta Martini", ingredients: [{name: "Vodka Citron", doseMl: 45, bottlePrice: 20, bottleMl: 700}, {name: "Triple Sec", doseMl: 20, bottlePrice: 22, bottleMl: 700}, {name: "Succo di Limone", doseMl: 20, bottlePrice: 3, bottleMl: 1000}], notes: "Metodo: Shake & Strain. Bordo con zucchero." },
+            "Missionary’s Downfall": { glass: "Tumbler Alto", ingredients: [{name: "Rum Bianco", doseMl: 45, bottlePrice: 18, bottleMl: 700}, {name: "Peach Liqueur (Pesca)", doseMl: 15, bottlePrice: 16, bottleMl: 700}, {name: "Succo di Lime", doseMl: 20, bottlePrice: 3, bottleMl: 1000}, {name: "Ananas Fresco", doseMl: 30, bottlePrice: 3, bottleMl: 1000}, {name: "Menta Fresca", doseMl: 10, bottlePrice: 2, bottleMl: 100}], notes: "Metodo: Blend con ghiaccio tritato." },
+            "Naked and Famous": { glass: "Coppetta Cocktail", ingredients: [{name: "Mezcal", doseMl: 22.5, bottlePrice: 32, bottleMl: 700}, {name: "Aperol", doseMl: 22.5, bottlePrice: 14, bottleMl: 1000}, {name: "Yellow Chartreuse", doseMl: 22.5, bottlePrice: 35, bottleMl: 700}, {name: "Succo di Lime", doseMl: 22.5, bottlePrice: 3, bottleMl: 1000}], notes: "Metodo: Shake & Strain. Variante moderna del Last Word." },
+            "New York Sour": { glass: "Tumbler Basso", ingredients: [{name: "Bourbon Whiskey", doseMl: 60, bottlePrice: 25, bottleMl: 700}, {name: "Succo di Limone", doseMl: 30, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Zucchero", doseMl: 20, bottlePrice: 6, bottleMl: 700}, {name: "Vino Rosso (float)", doseMl: 15, bottlePrice: 8, bottleMl: 750}], notes: "Metodo: Shake & Strain. Versare il vino rosso delicatamente in superficie." },
+            "Old Cuban": { glass: "Coppetta Cocktail", ingredients: [{name: "Rum Invecchiato", doseMl: 45, bottlePrice: 24, bottleMl: 700}, {name: "Succo di Lime", doseMl: 22.5, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Zucchero", doseMl: 15, bottlePrice: 6, bottleMl: 700}, {name: "Menta", doseMl: 6, bottlePrice: 2, bottleMl: 100}, {name: "Angostura", doseMl: 2, bottlePrice: 15, bottleMl: 200}, {name: "Champagne", doseMl: 60, bottlePrice: 18, bottleMl: 750}], notes: "Metodo: Shake & Top con Champagne." },
+            "Paloma": { glass: "Tumbler Alto", ingredients: [{name: "Tequila", doseMl: 50, bottlePrice: 25, bottleMl: 700}, {name: "Succo di Lime", doseMl: 15, bottlePrice: 3, bottleMl: 1000}, {name: "Soda al Pompelmo Rosa", doseMl: 120, bottlePrice: 3, bottleMl: 750}], notes: "Metodo: Build. Bordo con sale, ghiaccio, tequila, lime e soda al pompelmo." },
+            "Paper Plane": { glass: "Coppetta Cocktail", ingredients: [{name: "Bourbon Whiskey", doseMl: 22.5, bottlePrice: 25, bottleMl: 700}, {name: "Aperol", doseMl: 22.5, bottlePrice: 14, bottleMl: 1000}, {name: "Amaro Nonino", doseMl: 22.5, bottlePrice: 32, bottleMl: 700}, {name: "Succo di Limone", doseMl: 22.5, bottlePrice: 3, bottleMl: 1000}], notes: "Metodo: Shake & Strain. Shakerare con ghiaccio e filtrare in coppetta." },
+            "Penicillin": { glass: "Tumbler Basso", ingredients: [{name: "Scotch Whisky Blended", doseMl: 60, bottlePrice: 22, bottleMl: 700}, {name: "Succo di Limone", doseMl: 22.5, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Zenzero", doseMl: 15, bottlePrice: 8, bottleMl: 700}, {name: "Miele", doseMl: 7.5, bottlePrice: 8, bottleMl: 500}, {name: "Islay Single Malt (float)", doseMl: 7.5, bottlePrice: 38, bottleMl: 700}], notes: "Metodo: Shake & Strain. Spruzzare whisky torbato sopra prima di servire." },
+            "Russian Spring Punch": { glass: "Tumbler Alto", ingredients: [{name: "Vodka", doseMl: 25, bottlePrice: 19, bottleMl: 700}, {name: "Succo di Limone", doseMl: 25, bottlePrice: 3, bottleMl: 1000}, {name: "Crème de Cassis", doseMl: 15, bottlePrice: 18, bottleMl: 700}, {name: "Sciroppo di Zucchero", doseMl: 10, bottlePrice: 6, bottleMl: 700}, {name: "Spumante Brut", doseMl: 60, bottlePrice: 9, bottleMl: 750}], notes: "Metodo: Shake & Top." },
+            "Southside": { glass: "Coppetta Cocktail", ingredients: [{name: "Gin", doseMl: 60, bottlePrice: 22, bottleMl: 700}, {name: "Succo di Limone", doseMl: 30, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Zucchero", doseMl: 15, bottlePrice: 6, bottleMl: 700}, {name: "Menta", doseMl: 8, bottlePrice: 2, bottleMl: 100}], notes: "Metodo: Shake & Strain con foglie di menta pestate." },
+            "Spicy Fifty": { glass: "Coppetta Cocktail", ingredients: [{name: "Vodka Vanilla", doseMl: 50, bottlePrice: 22, bottleMl: 700}, {name: "Elderflower Cordial", doseMl: 15, bottlePrice: 16, bottleMl: 700}, {name: "Succo di Lime", doseMl: 15, bottlePrice: 3, bottleMl: 1000}, {name: "Sciroppo di Zucchero", doseMl: 10, bottlePrice: 6, bottleMl: 700}, {name: "Peperoncino Fresco (fetta)", doseMl: 2, bottlePrice: 2, bottleMl: 100}], notes: "Metodo: Shake & Strain con fettina di peperoncino fresco." },
+            "Suffering Bastard": { glass: "Tumbler Alto / Mug", ingredients: [{name: "Gin", doseMl: 30, bottlePrice: 22, bottleMl: 700}, {name: "Brandy / Cognac", doseMl: 30, bottlePrice: 28, bottleMl: 700}, {name: "Succo di Lime", doseMl: 15, bottlePrice: 3, bottleMl: 1000}, {name: "Angostura", doseMl: 2, bottlePrice: 15, bottleMl: 200}, {name: "Ginger Beer", doseMl: 100, bottlePrice: 2.5, bottleMl: 750}], notes: "Metodo: Build." },
+            "Ti’ Punch": { glass: "Tumbler Basso", ingredients: [{name: "Rum Agricolo Bianco", doseMl: 60, bottlePrice: 24, bottleMl: 700}, {name: "Lime (spicchio)", doseMl: 15, bottlePrice: 3, bottleMl: 1000}, {name: "Zucchero di Canna", doseMl: 5, bottlePrice: 1, bottleMl: 1000}], notes: "Metodo: Build. Classico delle Antille Francesi." },
+            "Trinidad Sour": { glass: "Coppetta Cocktail", ingredients: [{name: "Angostura Bitters", doseMl: 45, bottlePrice: 15, bottleMl: 200}, {name: "Orgeat Syrup", doseMl: 30, bottlePrice: 12, bottleMl: 700}, {name: "Rye Whiskey", doseMl: 15, bottlePrice: 28, bottleMl: 700}, {name: "Succo di Limone", doseMl: 22.5, bottlePrice: 3, bottleMl: 1000}], notes: "Metodo: Shake & Strain. Usa l'angostura come base alcolica principale." },
+            "Ve.N.To": { glass: "Tumbler Basso", ingredients: [{name: "Grappa", doseMl: 45, bottlePrice: 24, bottleMl: 700}, {name: "Succo di Limone", doseMl: 20, bottlePrice: 3, bottleMl: 1000}, {name: "Miele di Camomilla", doseMl: 15, bottlePrice: 10, bottleMl: 500}, {name: "Cordiale di Camomilla", doseMl: 15, bottlePrice: 8, bottleMl: 700}, {name: "Albume d'Uovo", doseMl: 20, bottlePrice: 2, bottleMl: 500}], notes: "Metodo: Shake & Strain. Cocktail ufficiale IBA a base di Grappa italiana." }
+        };
+
+        // Elenco completo dei 102 cocktail
+        const fullCocktailList = [
+            "Alexander", "Americano", "Angel Face", "Aviation", "Between the Sheets", "Boulevardier", "Brandy Crusta", "Casino", "Clover Club", "Daiquiri", "Dry Martini", "Gin Fizz", "Hanky Panky", "John Collins", "Last Word", "Manhattan", "Martinez", "Mary Pickford", "Monkey Gland", "Negroni", "Old Fashioned", "Paradise", "Planter’s Punch", "Porto Flip", "Ramos Fizz", "Remember the Maine", "Rusty Nail", "Sazerac", "Sidecar", "Stinger", "Tuxedo", "Vieux Carré", "Whiskey Sour", "White Lady", "Bellini", "Black Russian", "Bloody Mary", "Caipirinha", "Cardinale", "Champagne Cocktail", "Corpse Reviver #2", "Cosmopolitan", "Cuba Libre", "French 75", "French Connection", "Garibaldi", "Grasshopper", "Hemingway Special", "Horse’s Neck", "Irish Coffee", "Kir", "Long Island Iced Tea", "Mai Tai", "Margarita", "Mimosa", "Mint Julep", "Mojito", "Moscow Mule", "Negroni Sbagliato", "Piña Colada", "Pisco Sour", "Sea Breeze", "Sex on the Beach", "Singapore Sling", "Tequila Sunrise", "Tommy’s Margarita", "Vesper", "Zombie", "Aperol Spritz (o Spritz)", "B-52", "Barracuda", "Bee’s Knees", "Bramble", "Canchanchara", "Chartreuse Swizzle", "Dark ’N’ Stormy", "Dirty Martini", "Don’s Special Daiquiri", "Espresso Martini", "Fernandito", "French Martini", "Gin Basil Smash", "Grand Margarita", "IBA Tiki", "Illegal", "Jungle Bird", "Kamikaze", "Lemon Drop Martini", "Missionary’s Downfall", "Naked and Famous", "New York Sour", "Old Cuban", "Paloma", "Paper Plane", "Penicillin", "Russian Spring Punch", "Southside", "Spicy Fifty", "Suffering Bastard", "Ti’ Punch", "Trinidad Sour", "Ve.N.To"
+        ];
+
+        let ingredients = [
+            { id: 1, name: 'London Dry Gin', doseMl: 30, bottlePrice: 22.00, bottleMl: 700 },
+            { id: 2, name: 'Campari Bitter', doseMl: 30, bottlePrice: 16.50, bottleMl: 1000 },
+            { id: 3, name: 'Vermouth Rosso Dolce', doseMl: 30, bottlePrice: 14.00, bottleMl: 750 }
+        ];
+
+        window.onload = function() {
+            populateSelector();
+            renderIngredients();
+            calculateDrinkCost();
+        };
+
+        function toggleGuide() {
+            const guideBox = document.getElementById('guide-box');
+            if (guideBox) guideBox.classList.toggle('hidden');
+        }
+
+        function toggleConverter() {
+            const convBox = document.getElementById('converter-box');
+            if (convBox) convBox.classList.toggle('hidden');
+        }
+
+        function convertUnits(source) {
+            const ozInput = document.getElementById('conv-oz');
+            const clInput = document.getElementById('conv-cl');
+            const mlInput = document.getElementById('conv-ml');
+
+            if (source === 'oz') {
+                const oz = parseFloat(ozInput.value) || 0;
+                clInput.value = (oz * 2.95735).toFixed(2);
+                mlInput.value = (oz * 29.5735).toFixed(1);
+            } else if (source === 'cl') {
+                const cl = parseFloat(clInput.value) || 0;
+                ozInput.value = (cl / 2.95735).toFixed(2);
+                mlInput.value = (cl * 10).toFixed(1);
+            } else if (source === 'ml') {
+                const ml = parseFloat(mlInput.value) || 0;
+                ozInput.value = (ml / 29.5735).toFixed(2);
+                clInput.value = (ml / 10).toFixed(2);
+            }
+        }
+
+        function populateSelector() {
+            const select = document.getElementById('recipe-selector');
+            fullCocktailList.sort().forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderIngredients() {
+            const container = document.getElementById('ingredients-list');
+            if (!container) return;
+            container.innerHTML = '';
+
+            ingredients.forEach(item => {
+                const itemCost = item.bottleMl > 0 ? (item.bottlePrice / item.bottleMl) * item.doseMl : 0;
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-200 hover:bg-slate-50 transition-all';
+                tr.innerHTML = `
+                    <td class="py-2 pr-2">
+                        <input type="text" value="${item.name}" onchange="updateIngredient(${item.id}, 'name', this.value)" class="w-full px-2 py-1 rounded text-xs font-semibold bg-white border border-slate-300">
+                    </td>
+                    <td class="py-2 pr-2">
+                        <input type="number" value="${item.doseMl}" step="2.5" min="0" oninput="updateIngredient(${item.id}, 'doseMl', this.value)" class="w-full px-2 py-1 rounded text-xs font-bold text-green-700 bg-white border border-slate-300">
+                    </td>
+                    <td class="py-2 pr-2">
+                        <input type="number" value="${item.bottlePrice}" step="0.5" min="0" oninput="updateIngredient(${item.id}, 'bottlePrice', this.value)" class="w-full px-2 py-1 rounded text-xs font-semibold bg-white border border-slate-300">
+                    </td>
+                    <td class="py-2 pr-2">
+                        <input type="number" value="${item.bottleMl}" step="50" min="1" oninput="updateIngredient(${item.id}, 'bottleMl', this.value)" class="w-full px-2 py-1 rounded text-xs font-semibold bg-white border border-slate-300">
+                    </td>
+                    <td class="py-2 pr-2 text-right font-bold text-slate-900">
+                        € ${itemCost.toFixed(2)}
+                    </td>
+                    <td class="py-2 text-center">
+                        <button onclick="removeIngredient(${item.id})" class="text-slate-400 hover:text-red-600 px-1 transition-colors cursor-pointer">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                container.appendChild(tr);
+            });
+        }
+
+        function addIngredientRow() {
+            const newId = ingredients.length > 0 ? Math.max(...ingredients.map(i => i.id)) + 1 : 1;
+            ingredients.push({
+                id: newId,
+                name: 'Nuovo Ingrediente',
+                doseMl: 30,
+                bottlePrice: 15.00,
+                bottleMl: 700
+            });
+            renderIngredients();
+            calculateDrinkCost();
+        }
+
+        function loadPredefinedRecipe(cocktailName) {
+            if (!cocktailName) return;
+
+            document.getElementById('cocktail-name').value = cocktailName;
+
+            const data = cocktailDatabase[cocktailName];
+            if (data) {
+                document.getElementById('cocktail-glass').value = data.glass || 'Bicchiere Standard';
+                document.getElementById('cocktail-notes').value = data.notes || 'Metodo di preparazione standard.';
+                
+                ingredients = data.ingredients.map((ing, idx) => ({
+                    id: idx + 1,
+                    name: ing.name,
+                    doseMl: ing.doseMl,
+                    bottlePrice: ing.bottlePrice,
+                    bottleMl: ing.bottleMl
+                }));
+            } else {
+                document.getElementById('cocktail-glass').value = 'Bicchiere Tradizionale';
+                document.getElementById('cocktail-notes').value = `Metodo: Preparazione classica per ${cocktailName}. Shakerare o mescolare con ghiaccio in base al tipo di distillati.`;
+                ingredients = [
+                    { id: 1, name: `Distillato Base (${cocktailName})`, doseMl: 45, bottlePrice: 22.00, bottleMl: 700 },
+                    { id: 2, name: 'Liqueur / Modifier', doseMl: 15, bottlePrice: 16.00, bottleMl: 700 },
+                    { id: 3, name: 'Succo Fresco / Mixer', doseMl: 30, bottlePrice: 3.00, bottleMl: 1000 }
+                ];
+            }
+
+            renderIngredients();
+            calculateDrinkCost();
+        }
+
+        function updateIngredient(id, field, value) {
+            const item = ingredients.find(i => i.id === id);
+            if (item) {
+                if (field === 'name') item.name = value;
+                else item[field] = parseFloat(value) || 0;
+            }
+            renderIngredients();
+            calculateDrinkCost();
+        }
+
+        function removeIngredient(id) {
+            ingredients = ingredients.filter(i => i.id !== id);
+            renderIngredients();
+            calculateDrinkCost();
+        }
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            const t = i18n[lang] || i18n['it'];
+
+            document.getElementById('ui-btn-conv').innerText = t.btnConv;
+            document.getElementById('ui-btn-guide').innerText = t.btnGuide;
+            document.getElementById('g-title').innerText = t.gTitle;
+            document.getElementById('g-step1-t').innerText = t.gStep1T;
+            document.getElementById('g-step1-d').innerText = t.gStep1D;
+            document.getElementById('g-step2-t').innerText = t.gStep2T;
+            document.getElementById('g-step2-d').innerText = t.gStep2D;
+            document.getElementById('g-step3-t').innerText = t.gStep3T;
+            document.getElementById('g-step3-d').innerText = t.gStep3D;
+            document.getElementById('g-step4-t').innerText = t.gStep4T;
+            document.getElementById('g-step4-d').innerText = t.gStep4D;
+            document.getElementById('ui-conv-title').innerText = t.convTitle;
+            document.getElementById('ui-lbl-oz').innerText = t.lblOz;
+            document.getElementById('ui-lbl-cl').innerText = t.lblCl;
+            document.getElementById('ui-lbl-ml').innerText = t.lblMl;
+            document.getElementById('ui-lbl-recipe-select').innerText = t.lblRecipeSelect;
+            document.getElementById('ui-opt-default').innerText = t.optDefault;
+            document.getElementById('ui-lbl-cocktail-name').innerText = t.lblCocktailName;
+            document.getElementById('ui-lbl-cocktail-glass').innerText = t.lblCocktailGlass;
+            document.getElementById('ui-lbl-total-cost').innerText = t.lblTotalCost;
+            document.getElementById('ui-lbl-net-margin').innerText = t.lblNetMargin;
+            document.getElementById('ui-lbl-sale-price').innerText = t.lblSalePrice;
+            document.getElementById('ui-lbl-cost-pct').innerText = t.lblCostPct;
+            document.getElementById('ui-lbl-status').innerText = t.lblStatus;
+            document.getElementById('ui-lbl-ing-title').innerText = t.lblIngTitle;
+            document.getElementById('ui-btn-add-ing').innerText = t.btnAddIng;
+            document.getElementById('ui-th-ing').innerText = t.thIng;
+            document.getElementById('ui-th-dose').innerText = t.thDose;
+            document.getElementById('ui-th-price').innerText = t.thPrice;
+            document.getElementById('ui-th-size').innerText = t.thSize;
+            document.getElementById('ui-th-cost').innerText = t.thCost;
+            document.getElementById('ui-lbl-extra-title').innerText = t.lblExtraTitle;
+            document.getElementById('ui-lbl-garnish').innerText = t.lblGarnish;
+            document.getElementById('ui-sub-garnish').innerText = t.subGarnish;
+            document.getElementById('ui-lbl-ice').innerText = t.lblIce;
+            document.getElementById('ui-sub-ice').innerText = t.subIce;
+            document.getElementById('ui-lbl-extra').innerText = t.lblExtra;
+            document.getElementById('ui-sub-extra').innerText = t.subExtra;
+            document.getElementById('ui-lbl-notes-title').innerText = t.lblNotesTitle;
+
+            calculateDrinkCost();
+        }
+
+        function calculateDrinkCost() {
+            let liquidCost = 0;
+
+            ingredients.forEach(item => {
+                if (item.bottleMl > 0) {
+                    liquidCost += (item.bottlePrice / item.bottleMl) * item.doseMl;
+                }
+            });
+
+            const garnishCost = parseFloat(document.getElementById('cost-garnish').value) || 0;
+            const iceCost = parseFloat(document.getElementById('cost-ice').value) || 0;
+            const extraCost = parseFloat(document.getElementById('cost-extra').value) || 0;
+
+            const totalCost = liquidCost + garnishCost + iceCost + extraCost;
+            const salePrice = parseFloat(document.getElementById('sale-price').value) || 0;
+
+            const margin = salePrice - totalCost;
+            const costPercent = salePrice > 0 ? (totalCost / salePrice) * 100 : 0;
+            const marginPercent = salePrice > 0 ? (margin / salePrice) * 100 : 0;
+
+            document.getElementById('total-drink-cost').innerText = `€ ${totalCost.toFixed(2)}`;
+            document.getElementById('net-margin').innerText = `€ ${margin.toFixed(2)} (${marginPercent.toFixed(1)}%)`;
+            document.getElementById('drink-cost-percent').innerText = `${costPercent.toFixed(1)}%`;
+
+            const t = i18n[currentLang] || i18n['it'];
+            const statusEl = document.getElementById('profit-status');
+            if (costPercent <= 20) {
+                statusEl.innerHTML = `<i class="fa-solid fa-circle-check text-green-700"></i> ${t.optGreat}`;
+                statusEl.className = "font-bold text-sm text-green-700 flex items-center gap-1.5";
+            } else if (costPercent <= 30) {
+                statusEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600"></i> ${t.optGood}`;
+                statusEl.className = "font-bold text-sm text-amber-700 flex items-center gap-1.5";
+            } else {
+                statusEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-red-600"></i> ${t.optHigh}`;
+                statusEl.className = "font-bold text-sm text-red-700 flex items-center gap-1.5";
+            }
+        }
+    </script>
+</body>
+</html>
